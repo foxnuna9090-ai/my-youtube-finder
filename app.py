@@ -1,9 +1,9 @@
+%%writefile app.py
 import streamlit as st
 import pandas as pd
 from googleapiclient.discovery import build
 import datetime
 import re
-import uuid
 
 # ---------------------------------------------------------
 # Page Configuration & Custom CSS Styling
@@ -63,7 +63,6 @@ menu = st.sidebar.radio(
 if menu == "📊 황금 채널 발굴기":
     st.markdown("### 📊 황금 채널 발굴기")
 
-    # 1. 카테고리 선택 태그
     categories = [
         "전체", "건강/의학", "영화/드라마 리뷰", "연예인/이슈",
         "재테크/부동산", "동기부여/명언", "AI/IT 꿀팁", "라이프스타일/Vlog",
@@ -83,31 +82,65 @@ if menu == "📊 황금 채널 발굴기":
     st.markdown(f"선택된 카테고리: **{st.session_state['selected_category']}**")
     st.markdown("---")
 
-    # 2. 영상 타입 선택 (쇼츠 / 롱폼)
-    st.write("🎬 **영상 타입**")
     v_type = st.radio("영상 타입 선택", ["쇼츠", "롱폼"], horizontal=True, label_visibility="collapsed")
-
-    # 3. 구독자 구간 선택
-    st.write("👥 **구독자 구간**")
-    sub_range = st.radio(
-        "구독자 구간 선택", 
-        ["전체", "0~1만 명 (급성장)", "1만~5만 명", "5만~10만 명"], 
-        horizontal=True, 
-        label_visibility="collapsed"
-    )
-
-    # 4. 정렬 기준
-    st.write("📊 **정렬 기준**")
-    sort_option = st.radio(
-        "정렬 기준 선택", 
-        ["조회수 높은 순", "구독자 많은 순"], 
-        horizontal=True, 
-        label_visibility="collapsed"
-    )
+    sub_range = st.radio("구독자 구간 선택", ["전체", "0~1만 명 (급성장)", "1만~5만 명", "5만~10만 명"], horizontal=True, label_visibility="collapsed")
+    sort_option = st.radio("정렬 기준 선택", ["조회수 높은 순", "구독자 많은 순"], horizontal=True, label_visibility="collapsed")
 
     st.markdown("---")
+    
     if st.button("🚀 조건에 맞는 황금 채널 탐색하기", use_container_width=True):
-        st.success(f"[{st.session_state['selected_category']}] 카테고리에서 조건에 맞는 채널을 검색합니다!")
+        keyword = st.session_state["selected_category"]
+        if keyword == "전체":
+            keyword = "인기 채널"
+            
+        with st.spinner(f"[{keyword}] 관련 유튜브 채널을 검색하는 중입니다..."):
+            try:
+                youtube = build("youtube", "v3", developerKey=st.session_state["api_key"])
+                
+                # 유튜브 API 검색 요청
+                search_response = youtube.search().list(
+                    q=keyword,
+                    type="channel",
+                    part="snippet",
+                    maxResults=10
+                ).execute()
+
+                channels = []
+                for item in search_response.get("items", []):
+                    channel_id = item["snippet"]["channelId"]
+                    title = item["snippet"]["title"]
+                    description = item["snippet"]["description"]
+                    thumbnail = item["snippet"]["thumbnails"]["default"]["url"]
+                    
+                    # 채널 상세 정보 (구독자 수 등) 가져오기
+                    ch_detail = youtube.channels().list(
+                        part="statistics,snippet",
+                        id=channel_id
+                    ).execute()
+                    
+                    sub_count = "정보 없음"
+                    if ch_detail.get("items"):
+                        stats = ch_detail["items"][0]["statistics"]
+                        sub_count = stats.get("subscriberCount", "숨김 또는 비공개")
+                        if sub_count != "숨김 또는 비공개":
+                            sub_count = f"{int(sub_count):,}명"
+
+                    channels.append({
+                        "채널명": title,
+                        "구독자수": sub_count,
+                        "채널 링크": f"https://www.youtube.com/channel/{channel_id}",
+                        "설명": description
+                    })
+
+                if channels:
+                    st.success(f"🎉 총 {len(channels)}개의 채널을 찾았습니다!")
+                    df = pd.DataFrame(channels)
+                    st.dataframe(df, use_container_width=True)
+                else:
+                    st.warning("검색 결과가 없습니다. 다른 카테고리를 선택해 보세요.")
+
+            except Exception as e:
+                st.error(f"⚠️ 검색 중 오류가 발생했습니다. API 키를 확인해 주세요. (에러: {e})")
 
 # ---------------------------------------------------------
 # PAGE: API 키 설정
