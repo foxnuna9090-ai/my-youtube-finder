@@ -5,8 +5,7 @@ import datetime
 
 st.set_page_config(page_title="황금 채널 발굴기", page_icon="🚀", layout="wide", initial_sidebar_state="collapsed")
 
-# ⬇️ 아래 따옴표 사이에 본인의 정확한 YouTube API 키를 넣어주세요!
-MY_API_KEY = "AIzaSyD9NBQdPmHPmxKuuAC01d3r6ehdmxS1XBo"
+MY_API_KEY = "AIzaSyD9NBQdPmHPmxKuuAC01d3r6ehdmxS1XBq"
 
 if "api_key" not in st.session_state:
     st.session_state["api_key"] = MY_API_KEY
