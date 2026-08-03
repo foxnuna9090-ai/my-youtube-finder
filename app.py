@@ -11,11 +11,19 @@ st.set_page_config(page_title="황금 채널 발굴기", page_icon="🚀", layou
 if "api_key" not in st.session_state:
     st.session_state["api_key"] = "AIzaSyD9NBQdPmHPmxKuuAC01d3r6ehdmxS1XBq"
 
-# Custom CSS for UI cards and pill buttons
+# Custom CSS for UI cards, pill buttons, and text readability
 st.markdown("""
 <style>
     .stApp {
         background-color: #12141C;
+        color: #FFFFFF;
+    }
+    /* 라디오 버튼 글씨를 선명한 흰색으로 변경 */
+    .stRadio label {
+        color: #FFFFFF !important;
+        font-weight: 500 !important;
+    }
+    .stMarkdown p, .stMarkdown span {
         color: #FFFFFF;
     }
     .stButton > button {
@@ -101,9 +109,9 @@ if menu == "📊 황금 채널 발굴기":
     st.markdown(f"선택된 카테고리: **{st.session_state['selected_category']}**")
     st.markdown("---")
 
-    v_type = st.radio("영상 타입 선택", ["쇼츠", "롱폼"], horizontal=True, label_visibility="collapsed")
-    sub_range = st.radio("구독자 구간 선택", ["전체", "0~1만 명 (급성장)", "1만~5만 명", "5만~10만 명"], horizontal=True, label_visibility="collapsed")
-    sort_option = st.radio("정렬 기준 선택", ["조회수 높은 순", "구독자 많은 순"], horizontal=True, label_visibility="collapsed")
+    v_type = st.radio("영상 타입 선택", ["쇼츠", "롱폼"], horizontal=True)
+    sub_range = st.radio("구독자 구간 선택", ["전체", "0~1만 명 (급성장)", "1만~5만 명", "5만~10만 명"], horizontal=True)
+    sort_option = st.radio("정렬 기준 선택", ["조회수 높은 순", "구독자 많은 순"], horizontal=True)
 
     st.markdown("---")
     
@@ -148,7 +156,7 @@ if menu == "📊 황금 채널 발굴기":
                             sub_count = int(stats.get("subscriberCount", 0))
                             view_count = int(stats.get("viewCount", 0))
 
-                        # 최근 대표 영상 1개 가져오기 (영상 ID 포함)
+                        # 최근 대표 영상 1개 가져오기
                         video_response = youtube.search().list(
                             channelId=channel_id,
                             part="snippet",
@@ -170,14 +178,13 @@ if menu == "📊 황금 채널 발굴기":
                             video_title = v_item["snippet"]["title"]
                             video_thumb = v_item["snippet"]["thumbnails"]["high"]["url"]
                             video_id = v_item["id"]["videoId"]
-                            video_url = f"https://www.youtube.com/watch?v={video_id}"  # 영상 바로가기 링크
+                            video_url = f"https://www.youtube.com/watch?v={video_id}"
                             
                             pub_time = v_item["snippet"]["publishedAt"]
                             pub_date = datetime.datetime.strptime(pub_time[:10], "%Y-%m-%d")
                             days_ago = (datetime.datetime.now() - pub_date).days
                             upload_date_str = f"{days_ago}일 전" if days_ago > 0 else "오늘"
 
-                        # 🎨 채널화면(썸네일 및 제목) 클릭 시 해당 영상으로 바로 이동하는 카드 UI
                         st.markdown(f"""
                         <div class="channel-card">
                             <a href="{video_url}" target="_blank">
