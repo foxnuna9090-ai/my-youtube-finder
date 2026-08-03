@@ -5,7 +5,7 @@ import datetime
 
 st.set_page_config(page_title="황금 채널 발굴기", page_icon="🚀", layout="wide", initial_sidebar_state="collapsed")
 
-MY_API_KEY = "AIzaSyD9NBQdPmHPmxKuuAC01d3r6ehdmxS1XBq"
+MY_API_KEY = "AIzaSyD9NBQdPmHPmxKuuAC01d3r6ehdmxS1XBo"
 
 if "api_key" not in st.session_state:
     st.session_state["api_key"] = MY_API_KEY
