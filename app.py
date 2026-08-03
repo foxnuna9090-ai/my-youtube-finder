@@ -3,22 +3,20 @@ import pandas as pd
 from googleapiclient.discovery import build
 import datetime
 
-# ---------------------------------------------------------
-# Page Configuration & Custom CSS Styling
-# ---------------------------------------------------------
 st.set_page_config(page_title="황금 채널 발굴기", page_icon="🚀", layout="wide", initial_sidebar_state="collapsed")
 
-if "api_key" not in st.session_state:
-    st.session_state["api_key"] = "AIzaSyD9NBQdPmHPmxKuuAC01d3r6ehdmxS1XBq"
+# ⬇️ 아래 따옴표 사이에 본인의 정확한 YouTube API 키를 넣어주세요!
+MY_API_KEY = "AIzaSyD9NBQdPmHPmxKuuAC01d3r6ehdmxS1XBo"
 
-# Custom CSS for UI cards, pill buttons, and text readability
+if "api_key" not in st.session_state:
+    st.session_state["api_key"] = MY_API_KEY
+
 st.markdown("""
 <style>
     .stApp {
         background-color: #12141C;
         color: #FFFFFF;
     }
-    /* 라디오 버튼 글씨를 선명한 흰색으로 변경 */
     .stRadio label {
         color: #FFFFFF !important;
         font-weight: 500 !important;
@@ -40,7 +38,6 @@ st.markdown("""
         border-color: #4B6BFB !important;
         color: #4B6BFB !important;
     }
-    /* 카드 디자인 스타일 및 링크 호환 */
     .channel-card {
         background-color: #1A1D29;
         border: 1px solid #2A2E3D;
@@ -66,9 +63,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ---------------------------------------------------------
-# Sidebar Navigation
-# ---------------------------------------------------------
 st.sidebar.title("👑 Golden Finder")
 menu = st.sidebar.radio(
     "메뉴",
@@ -84,9 +78,6 @@ menu = st.sidebar.radio(
     ]
 )
 
-# ---------------------------------------------------------
-# PAGE 1: 황금 채널 발굴기
-# ---------------------------------------------------------
 if menu == "📊 황금 채널 발굴기":
     st.markdown("### 📊 황금 채널 발굴기")
 
@@ -124,7 +115,6 @@ if menu == "📊 황금 채널 발굴기":
             try:
                 youtube = build("youtube", "v3", developerKey=st.session_state["api_key"])
                 
-                # 채널 검색
                 search_response = youtube.search().list(
                     q=keyword,
                     type="channel",
@@ -143,7 +133,6 @@ if menu == "📊 황금 채널 발굴기":
                         title = item["snippet"]["title"]
                         thumbnail = item["snippet"]["thumbnails"]["high"]["url"]
                         
-                        # 채널 상세 정보 (구독자, 총 조회수 등)
                         ch_detail = youtube.channels().list(
                             part="statistics,snippet",
                             id=channel_id
@@ -156,7 +145,6 @@ if menu == "📊 황금 채널 발굴기":
                             sub_count = int(stats.get("subscriberCount", 0))
                             view_count = int(stats.get("viewCount", 0))
 
-                        # 최근 대표 영상 1개 가져오기
                         video_response = youtube.search().list(
                             channelId=channel_id,
                             part="snippet",
@@ -229,9 +217,6 @@ if menu == "📊 황금 채널 발굴기":
             except Exception as e:
                 st.error(f"⚠️ 검색 중 오류가 발생했습니다: {e}")
 
-# ---------------------------------------------------------
-# PAGE: API 키 설정
-# ---------------------------------------------------------
 elif menu == "🔑 YouTube API 키 설정":
     st.title("🔑 YouTube API 키 설정")
     key_input = st.text_input("Google Cloud API Key", value=st.session_state["api_key"], type="password")
